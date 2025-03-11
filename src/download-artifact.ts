@@ -1,8 +1,8 @@
 import * as os from 'os'
 import * as path from 'path'
 import * as core from '@actions/core'
-import artifactClient from '@actions/artifact'
-import type {Artifact, FindOptions} from '@actions/artifact'
+import artifactClient from '@crimsongiteaactions/actions-artifact'
+import type {Artifact, FindOptions} from '@crimsongiteaactions/actions-artifact'
 import {Minimatch} from 'minimatch'
 import {Inputs, Outputs} from './constants'
 

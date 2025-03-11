@@ -28,6 +28,10 @@ jobs:
         node-version: 20.x
         cache: 'npm'
 
+    - name: Setup
+      run: |
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GHA_PACKAGES }}" >> ~/.npmrc
+
     - name: npm install
       run: npm install
 
