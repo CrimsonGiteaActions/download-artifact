@@ -11,6 +11,10 @@ jobs:
   build:
     name: Build
 
+    permissions:
+      packages: read
+      contents: read
+
     strategy:
       matrix:
         runs-on: [ubuntu-latest, macos-latest, windows-latest]
@@ -30,7 +34,7 @@ jobs:
 
     - name: Setup
       run: |
-        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GHA_PACKAGES }}" >> ~/.npmrc
+        echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ~/.npmrc
 
     - name: npm install
       run: npm install
