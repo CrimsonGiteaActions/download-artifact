@@ -15,7 +15,7 @@ export const chunk = <T>(arr: T[], n: number): T[][] =>
     return acc
   }, [] as T[][])
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
   const inputs = {
     name: core.getInput(Inputs.Name, {required: false}),
     path: core.getInput(Inputs.Path, {required: false}),
@@ -106,26 +106,39 @@ async function run(): Promise<void> {
     core.info(`Preparing to download the following artifacts:`)
     artifacts.forEach(artifact => {
       core.info(
-        `- ${artifact.name} (ID: ${artifact.id}, Size: ${artifact.size})`
+        `- ${artifact.name} (ID: ${artifact.id}, Size: ${artifact.size}, Expected Digest: ${artifact.digest})`
       )
     })
   }
 
-  const downloadPromises = artifacts.map(artifact =>
-    artifactClient.downloadArtifact(artifact.id, {
+  const downloadPromises = artifacts.map(artifact => ({
+    name: artifact.name,
+    promise: artifactClient.downloadArtifact(artifact.id, {
       ...options,
       path:
         isSingleArtifactDownload || inputs.mergeMultiple
           ? resolvedPath
-          : path.join(resolvedPath, artifact.name)
+          : path.join(resolvedPath, artifact.name),
+      expectedHash: artifact.digest
     })
-  )
+  }))
 
   const chunkedPromises = chunk(downloadPromises, PARALLEL_DOWNLOADS)
   for (const chunk of chunkedPromises) {
-    await Promise.all(chunk)
-  }
+    const chunkPromises = chunk.map(item => item.promise)
+    const results = await Promise.all(chunkPromises)
 
+    for (let i = 0; i < results.length; i++) {
+      const outcome = results[i]
+      const artifactName = chunk[i].name
+
+      if (outcome.digestMismatch) {
+        core.warning(
+          `Artifact '${artifactName}' digest validation failed. Please verify the integrity of the artifact.`
+        )
+      }
+    }
+  }
   core.info(`Total of ${artifacts.length} artifact(s) downloaded`)
   core.setOutput(Outputs.DownloadPath, resolvedPath)
   core.info('Download artifact has finished successfully')
