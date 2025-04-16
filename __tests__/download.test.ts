@@ -1,5 +1,7 @@
 import * as core from '@actions/core'
-import artifact, {ArtifactNotFoundError} from '@actions/artifact'
+import artifact, {
+  ArtifactNotFoundError
+} from '@crimsongiteaactions/actions-artifact'
 import {run} from '../src/download-artifact'
 import {Inputs} from '../src/constants'
 
